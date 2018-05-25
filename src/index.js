@@ -1,4 +1,5 @@
 const fs = require('fs');
+const path = require('path');
 const { createCanvas, loadImage } = require('canvas');
 
 const headerLength = 43;
@@ -6,9 +7,22 @@ const standardHeader = 'reMarkable lines with selections and layers';
 const width = 1404;
 const height = 1872;
 
-
 /**
  * 
+ * @param {string} inputFile 
+ * @param {string} outdir 
+ */
+function parse(inputFile, outdir) {
+    fs.readFile(inputFile, (err, data) => {
+        if (!checkHeader(data)) {
+            console.log('invalid lines file');
+            return;
+        }
+        processFile(data.slice(headerLength), outdir);
+    })
+}
+
+/**
  * @param {Buffer} buffer 
  */
 function checkHeader(buffer) {
@@ -22,18 +36,42 @@ function checkHeader(buffer) {
 }
 
 /**
- * 
+ * @param {Buffer} buffer 
+ */
+function processFile(buffer, outdir) {
+
+    let pages = buffer.readInt32LE(0x0);
+    let pOffset = 4;
+
+    console.log('the file has ' + pages + ' pages');
+
+    for(let p = 0; p < pages; p++) {
+        const canvas = createCanvas(width, height);
+        const ctx = canvas.getContext('2d');
+
+        ctx.fillStyle = 'rgba(255, 255, 255, 1)';
+        ctx.fillRect(0,0,width,height);
+        
+        pOffset = processPage(buffer, pOffset, ctx);
+
+        outImg = fs.createWriteStream(path.join(outdir, p + '.png'));
+
+        canvas.pngStream().pipe(outImg);
+
+        outImg.on('finish', function () {
+            console.log('The PNG file was created.');
+        });
+    };
+}
+
+/** 
  * @param {Buffer} buffer 
  * @param {number} offset 
  */
-function processPage(buffer, offset) {
+function processPage(buffer, offset, ctx) {
     console.log('\t--- processing page at ' + offset.toString(16));
 
     const layers = buffer.readInt32LE(offset);
-
-    const canvas = createCanvas(width, height);
-    const ctx = canvas.getContext('2d');
-
     offset += 4;
 
     console.log('\tpage has ' + layers + ' layers');
@@ -43,80 +81,40 @@ function processPage(buffer, offset) {
         console.log('\t\tprocessing layer ' + l);
 
         const lines = buffer.readInt32LE(offset);
-
         offset += 4;
 
         console.log('\t\tlevel has ' + lines + ' lines');
 
         for (let li = 0; li < lines; li++) {
             const lineDef = {
-                brush: buffer.readInt32LE(offset + 0x00),
-                color: buffer.readInt32LE(offset + 0x04),
-                magic: buffer.readInt32LE(offset + 0x08),
-                brushSize: buffer.readFloatLE(offset + 0x0C),
-                dots: buffer.readInt32LE(offset + 0x10),
+                brush: buffer.readInt32LE(offset),
+                color: buffer.readInt32LE(offset + 4),
+                magic: buffer.readInt32LE(offset + 8),
+                brushSize: buffer.readFloatLE(offset + 12),
+                dots: buffer.readInt32LE(offset + 16),
             }
             offset += 20;
-            // console.log('\t\t\tlinedef ', lineDef);
 
             ctx.strokeStyle = 'rgba(0,0,0,1)';
-            ctx.lineWidth = 8;
+            ctx.lineWidth = 2;
             ctx.beginPath();
             for (let d = 0; d < lineDef.dots; d++) {
                 const dotDef = {
-                    x: buffer.readFloatLE(offset + 0x00),
-                    y: buffer.readFloatLE(offset + 0x04),
-                    pressure: buffer.readFloatLE(offset + 0x08),
-                    xrot: buffer.readFloatLE(offset + 0x0c),
-                    yrot: buffer.readFloatLE(offset + 0x10),
+                    x: buffer.readFloatLE(offset),
+                    y: buffer.readFloatLE(offset + 4),
+                    pressure: buffer.readFloatLE(offset + 8),
+                    xrot: buffer.readFloatLE(offset + 12),
+                    yrot: buffer.readFloatLE(offset + 16),
                 }
                 offset += 20;
 
                 ctx.lineTo(dotDef.x, dotDef.y);
-                // console.log(dotDef);
             }
-            ctx.stroke()
-
+            ctx.stroke();
         }
     }
 
-    outImg = fs.createWriteStream(__dirname + '/' + Math.random() + '.png');
-
-    canvas.pngStream().pipe(outImg);
-
-    outImg.on('finish', function () {
-        console.log('The PNG file was created.');
-    });
-
     return offset;
-}
-
-/**
- * 
- * @param {Buffer} buffer 
- */
-function processFile(buffer) {
-    console.log('processing file');
-
-    let pages = buffer.readInt32LE(0x0);
-
-    console.log('the file has ' + pages + ' pages');
-
-    let pOffset = 0x4;
-    do {
-        pOffset = processPage(buffer, pOffset);
-        pages--;
-    } while (pOffset > 0 && pages > 0);
-}
-
-function parse(input) {
-    fs.readFile(input, (err, data) => {
-        if (!checkHeader(data)) {
-            console.log('invalid lines file');
-            return;
-        }
-        processFile(data.slice(headerLength));
-    })
 }
 
 module.exports = parse;
