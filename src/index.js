@@ -13,16 +13,13 @@ const height = 1872;
  * @param {string} outdir 
  */
 function parse(inputFile, outdir) {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
         fs.readFile(inputFile, (err, data) => {
             if (!checkHeader(data)) {
-                console.log('invalid lines file');
-                return;
+                return reject('invalid lines file');
             }
             processFile(data.slice(headerLength), outdir)
-                .then(() => {
-                    resolve("finished");
-                });
+                .then(paths => resolve(paths));
         });
     });
 }
@@ -63,12 +60,14 @@ function processFile(buffer, outdir) {
 
         pagesPromises.push(new Promise(resolve => {
 
-            outImg = fs.createWriteStream(path.join(outdir, p + '.png'));
+            const imgPath = path.join(outdir, p + '.png');
+
+            outImg = fs.createWriteStream(imgPath);
 
             canvas.pngStream().pipe(outImg);
 
             outImg.on('finish', function () {
-                resolve();
+                resolve({ path: imgPath });
             });
 
         }))
@@ -131,4 +130,4 @@ function processPage(buffer, offset, ctx) {
     return offset;
 }
 
-module.exports = parse;
+module.exports = { parse };
