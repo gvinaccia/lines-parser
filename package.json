@@ -1,6 +1,6 @@
 {
   "name": "lines-parser",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "main": "src/index.js",
   "author": "Giovanni Vinaccia <vinaccia.giovanni@gmail.com>",
   "license": "MIT",
@@ -9,5 +9,6 @@
   },
   "dependencies": {
     "canvas": "^2.0.0-alpha.12"
-  }
+  },
+  "typings": "src/index.d.ts"
 }

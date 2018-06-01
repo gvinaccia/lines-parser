@@ -13,13 +13,18 @@ const height = 1872;
  * @param {string} outdir 
  */
 function parse(inputFile, outdir) {
-    fs.readFile(inputFile, (err, data) => {
-        if (!checkHeader(data)) {
-            console.log('invalid lines file');
-            return;
-        }
-        processFile(data.slice(headerLength), outdir);
-    })
+    return new Promise((resolve) => {
+        fs.readFile(inputFile, (err, data) => {
+            if (!checkHeader(data)) {
+                console.log('invalid lines file');
+                return;
+            }
+            processFile(data.slice(headerLength), outdir)
+                .then(() => {
+                    resolve("finished");
+                });
+        });
+    });
 }
 
 /**
@@ -45,23 +50,32 @@ function processFile(buffer, outdir) {
 
     console.log('the file has ' + pages + ' pages');
 
-    for(let p = 0; p < pages; p++) {
+    const pagesPromises = [];
+
+    for (let p = 0; p < pages; p++) {
         const canvas = createCanvas(width, height);
         const ctx = canvas.getContext('2d');
 
         ctx.fillStyle = 'rgba(255, 255, 255, 1)';
-        ctx.fillRect(0,0,width,height);
-        
+        ctx.fillRect(0, 0, width, height);
+
         pOffset = processPage(buffer, pOffset, ctx);
 
-        outImg = fs.createWriteStream(path.join(outdir, p + '.png'));
+        pagesPromises.push(new Promise(resolve => {
 
-        canvas.pngStream().pipe(outImg);
+            outImg = fs.createWriteStream(path.join(outdir, p + '.png'));
 
-        outImg.on('finish', function () {
-            console.log('The PNG file was created.');
-        });
+            canvas.pngStream().pipe(outImg);
+
+            outImg.on('finish', function () {
+                resolve();
+            });
+
+        }))
+
     };
+
+    return Promise.all(pagesPromises);
 }
 
 /** 
