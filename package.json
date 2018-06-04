@@ -1,6 +1,6 @@
 {
   "name": "lines-parser",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "main": "src/index.js",
   "author": "Giovanni Vinaccia <vinaccia.giovanni@gmail.com>",
   "repository": "github:gvinaccia/lines-parser",
