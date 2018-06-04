@@ -110,6 +110,13 @@ function processPage(buffer, offset, ctx) {
 
             ctx.strokeStyle = 'rgba(0,0,0,1)';
             ctx.lineWidth = 2;
+
+            // eraser brush
+            if (lineDef.brush == 6) {
+                ctx.strokeStyle = 'rgba(255,255,255,1)';
+                ctx.lineWidth = 36;
+            }
+
             ctx.beginPath();
             for (let d = 0; d < lineDef.dots; d++) {
                 const dotDef = {
