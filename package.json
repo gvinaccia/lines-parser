@@ -2,9 +2,12 @@
   "name": "lines-parser",
   "description": "unofficial parser for .lines files for reMarkable paper tablet",
   "keywords": [
-    "remarkable", "remarkable-tablet", "remarkable-paper-tablet", "paper-tablet"
+    "remarkable",
+    "remarkable-tablet",
+    "remarkable-paper-tablet",
+    "paper-tablet"
   ],
-  "version": "0.0.5",
+  "version": "0.0.6",
   "main": "src/index.js",
   "author": "Giovanni Vinaccia <vinaccia.giovanni@gmail.com>",
   "repository": "github:gvinaccia/lines-parser",
