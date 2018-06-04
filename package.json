@@ -3,6 +3,7 @@
   "version": "0.0.4",
   "main": "src/index.js",
   "author": "Giovanni Vinaccia <vinaccia.giovanni@gmail.com>",
+  "repository": "github:gvinaccia/lines-parser",
   "license": "MIT",
   "scripts": {
     "test": "node test/test.js"
