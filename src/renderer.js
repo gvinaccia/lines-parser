@@ -36,8 +36,10 @@ function render(pageDef) {
 
         }
 
+        if (line.brush == 8) {
+          ctx.fill();
+        }
         ctx.stroke();
-        ctx.fill();
       }
     }
 
