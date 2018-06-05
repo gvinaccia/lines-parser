@@ -9,6 +9,7 @@ const colors = {
   pencil: '#666666',
   higlighter: '#AAAAAA',
   white: '#ffffff',
+  transparent: 'rgba(255,255,255,0)',
 }
 
 function render(pageDef) {
@@ -36,6 +37,7 @@ function render(pageDef) {
         }
 
         ctx.stroke();
+        ctx.fill();
       }
     }
 
@@ -49,6 +51,7 @@ function configureBrush(linedef, ctx) {
 
   let color = linedef.color == 0 ? colors.black : (linedef.color == 1 ? colors.gray : colors.white);
   let sizeFactor = 1;
+  let fillColor = color.transparent;
 
   switch (linedef.brush) {
     case 0:
@@ -80,9 +83,17 @@ function configureBrush(linedef, ctx) {
       sizeFactor = 4;
       color = colors.pencil;
       break;
+    case 8:
+      // eraser area
+      color = colors.white;
+      fillColor = colors.white;
+      sizeFactor = 1;
+    default:
+      break;
   }
 
   ctx.strokeStyle = color;
+  ctx.fillStyle = fillColor;
   ctx.lineWidth = sizeFactor * linedef.brushSize;
 }
 
