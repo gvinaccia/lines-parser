@@ -7,7 +7,7 @@
     "remarkable-paper-tablet",
     "paper-tablet"
   ],
-  "version": "0.0.6",
+  "version": "0.0.7",
   "main": "src/index.js",
   "author": "Giovanni Vinaccia <vinaccia.giovanni@gmail.com>",
   "repository": "github:gvinaccia/lines-parser",
